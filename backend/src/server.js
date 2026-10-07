@@ -1,7 +1,9 @@
 import { createApp } from './app.js';
 import { config } from './config/env.js';
+import {createContainer} from "./container.js";
 
-const app = createApp();
+const container = createContainer();
+const app = createApp(container);
 
 const server = app.listen(config.port, config.host, () => {
   console.log(`👤 Users API on http://${config.host}:${config.port} (${config.env}, pid ${process.pid})`);
