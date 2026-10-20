@@ -1,11 +1,11 @@
+import { InMemoryRepository } from './in-memory.repository.js';
 
+export class UsersRepository extends InMemoryRepository {
+  findByEmail(email) {
+    return this.findOne((user) => user.email === email.toLowerCase());
+  }
 
-import {InMemoryRepository} from "./in-memory.repository.js";
-
-export class UsersRepository extends InMemoryRepository
-{
- findByEmail(Email)
-{
-return this.findOne((user)=> user.email === Email.toLowerCase());
-}
+  findByGithubId(githubId) {
+    return this.findOne((user) => user.githubId === githubId);
+  }
 }

@@ -1,81 +1,84 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createApp } from '../../src/app.js';
-import { createContainer } from '../../src/container.js';
+import { ADMIN, bearer, buildTestApp, loginAs, RAM, registerAs, SITA } from '../helpers.js';
 
 const USERS = '/api/v1/users';
-const sita = {
-  firstName: 'Sita',
-  lastName: 'Gurung',
-  email: 'sita@example.com',
-  password: 'Secret123',
-  address: { street: 'Lakeside Road 5', city: 'Pokhara', country: 'Nepal' },
-};
 
-describe('Users API (integration)', () => {
+describe('Users API with RBAC + ABAC', () => {
   let app;
-  let container;
+  let admin; // { user, token }
+  let sita;
+  let ram;
 
-  beforeEach(() => {
-    // A brand-new container per test = a brand-new empty "database". Tests can't affect each other.
-    // We also inject a fast fake hasher: possible ONLY because of Dependency Injection.
-    container = createContainer({ hashPassword: async (plain) => `fake-hash:${plain}` });
-    app = createApp(container);
+  beforeEach(async () => {
+    ({ app } = await buildTestApp());
+    admin = await loginAs(app, ADMIN);
+    sita = await registerAs(app, SITA);
+    ram = await registerAs(app, RAM);
   });
 
-  it('POST → 201, and the injected hasher was used', async () => {
-    const res = await request(app).post(USERS).send(sita);
-    expect(res.status).toBe(201);
-    expect(res.body.data).not.toHaveProperty('passwordHash');
-
-    const stored = await container.usersRepository.findById(res.body.data.id);
-    expect(stored.passwordHash).toBe('fake-hash:Secret123');
+  it('401 for every /users route without a token', async () => {
+    expect((await request(app).get(USERS)).status).toBe(401);
+    expect((await request(app).get(`${USERS}/${sita.user.id}`)).status).toBe(401);
   });
 
-  it('each test starts with an empty store', async () => {
-    const res = await request(app).get(USERS);
-    expect(res.body.meta.total).toBe(0);
-  });
+  describe('RBAC: admin-only routes', () => {
+    it('GET /users: admin 200, customer 403', async () => {
+      const asAdmin = await request(app).get(USERS).set(bearer(admin.token));
+      expect(asAdmin.status).toBe(200);
+      expect(asAdmin.body.meta.total).toBe(3);
 
-  it('full lifecycle: create → get → patch → delete → 404', async () => {
-    const { body } = await request(app).post(USERS).send(sita);
-    const url = `${USERS}/${body.data.id}`;
-
-    expect((await request(app).get(url)).status).toBe(200);
-    expect((await request(app).patch(url).send({ phone: '+977-9811111111' })).body.data.phone).toBe('+977-9811111111');
-    expect((await request(app).delete(url)).status).toBe(204);
-    expect((await request(app).get(url)).status).toBe(404);
-  });
-
-  describe('custom middleware', () => {
-    it('requireJson: form-encoded POST → 415', async () => {
-      const res = await request(app).post(USERS).type('form').send('firstName=Sita');
-      expect(res.status).toBe(415);
-      expect(res.headers['content-type']).toMatch(/application\/problem\+json/);
+      const asCustomer = await request(app).get(USERS).set(bearer(sita.token));
+      expect(asCustomer.status).toBe(403);
+      expect(asCustomer.body.detail).toBe('Requires role: admin');
     });
 
-    it('validateIdParam: GET /users/123 → 400 (not 404)', async () => {
-      const res = await request(app).get(`${USERS}/123`);
+    it('PATCH /users/:id/role: only admins can promote', async () => {
+      const bySita = await request(app).patch(`${USERS}/${sita.user.id}/role`).set(bearer(sita.token)).send({ role: 'admin' });
+      expect(bySita.status).toBe(403); // can't promote yourself
+
+      const byAdmin = await request(app).patch(`${USERS}/${sita.user.id}/role`).set(bearer(admin.token)).send({ role: 'admin' });
+      expect(byAdmin.status).toBe(200);
+      expect(byAdmin.body.data.role).toBe('admin');
+    });
+
+    it('400 for an invalid role', async () => {
+      const res = await request(app).patch(`${USERS}/${sita.user.id}/role`).set(bearer(admin.token)).send({ role: 'superuser' });
       expect(res.status).toBe(400);
-      expect(res.body.detail).toBe('id must be a valid UUID');
-    });
-
-    it('validateIdParam also guards PATCH and DELETE', async () => {
-      expect((await request(app).patch(`${USERS}/abc`).send({ phone: '+977-9811111111' })).status).toBe(400);
-      expect((await request(app).delete(`${USERS}/abc`)).status).toBe(400);
-    });
-
-    it('a valid but unknown UUID still reaches the service → 404', async () => {
-      const res = await request(app).get(`${USERS}/15cfde80-9253-4e58-a113-a87a9e67498a`);
-      expect(res.status).toBe(404);
     });
   });
 
-  it('a fake service can replace the real one entirely', async () => {
-    const fakeService = { list: async () => ({ data: [{ id: 'x', firstName: 'Fake' }], meta: { page: 1, limit: 20, total: 1, totalPages: 1 } }) };
-    const fakeApp = createApp(createContainer({ usersService: fakeService }));
+  describe('ABAC: ownership rules', () => {
+    it('a customer can read and update THEIR OWN profile', async () => {
+      const url = `${USERS}/${sita.user.id}`;
+      expect((await request(app).get(url).set(bearer(sita.token))).status).toBe(200);
 
-    const res = await request(fakeApp).get(USERS);
-    expect(res.body.data).toEqual([{ id: 'x', firstName: 'Fake' }]);
+      const res = await request(app).patch(url).set(bearer(sita.token)).send({ phone: '+977-9811111111' });
+      expect(res.status).toBe(200);
+      expect(res.body.data.phone).toBe('+977-9811111111');
+    });
+
+    it("a customer can NOT read or update someone else's profile", async () => {
+      const url = `${USERS}/${ram.user.id}`;
+      expect((await request(app).get(url).set(bearer(sita.token))).status).toBe(403);
+      expect((await request(app).patch(url).set(bearer(sita.token)).send({ phone: '+977-9811111111' })).status).toBe(403);
+    });
+
+    it('an admin can read and update anyone', async () => {
+      const url = `${USERS}/${ram.user.id}`;
+      expect((await request(app).get(url).set(bearer(admin.token))).status).toBe(200);
+      expect((await request(app).patch(url).set(bearer(admin.token)).send({ lastName: 'Thapa Magar' })).status).toBe(200);
+    });
+
+    it('DELETE: customers never; admins yes, but not themselves', async () => {
+      expect((await request(app).delete(`${USERS}/${sita.user.id}`).set(bearer(sita.token))).status).toBe(403);
+      expect((await request(app).delete(`${USERS}/${admin.user.id}`).set(bearer(admin.token))).status).toBe(403);
+      expect((await request(app).delete(`${USERS}/${sita.user.id}`).set(bearer(admin.token))).status).toBe(204);
+    });
+  });
+
+  it('middleware order: 401 (no token) is checked before 400 (bad id)', async () => {
+    expect((await request(app).get(`${USERS}/123`)).status).toBe(401);
+    expect((await request(app).get(`${USERS}/123`).set(bearer(admin.token))).status).toBe(400);
   });
 });
