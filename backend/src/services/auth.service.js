@@ -36,4 +36,10 @@ export class AuthService {
     await this.users.changePassword(userId, currentPassword, newPassword);
     await this.tokens.revokeAllForUser(userId); // log out every device
   }
+
+  async setPassword(userId,newPassword)
+  {
+    await this.users.setPassword(userId,newPassword);
+    await this.tokens.revokeAllForUser(userId);
+  }
 }

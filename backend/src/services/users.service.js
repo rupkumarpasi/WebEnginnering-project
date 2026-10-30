@@ -12,6 +12,8 @@ const withDefaults = (profile) => ({
   dateOfBirth: profile.dateOfBirth ?? null,
   address: profile.address ?? null,
   githubId: profile.githubId ?? null,
+   avatar: profile.avatar ?? null,
+
 });
 
 // The ONLY way a user leaves this service: without the password hash.
@@ -92,6 +94,15 @@ export class UsersService {
     await this.users.update(id, { passwordHash: await this.hash(newPassword) });
   }
 
+  async setPassword(id, newPassword){
+    console.log("id"+ id)
+    const userInfo = await this.users.findById(id);
+     const user = await this.users.findByEmail(userInfo.email);
+     
+     if(!user) throw notFound('user not found');
+    await this.users.update(id,{passwordHash: await this.hash(newPassword)});
+  }
+
   async changeRole(id, role) {
     await this.getById(id);
     return toPublicUser(await this.users.update(id, { role }));
@@ -112,6 +123,12 @@ export class UsersService {
       passwordHash: null, // OAuth-only account: cannot log in with a password
     });
     return toPublicUser(user);
+  }
+
+
+   async setAvatar(id, avatar) {
+    await this.getById(id);
+    return toPublicUser(await this.users.update(id, { avatar }));
   }
 
   async #assertEmailAvailable(email, exceptId) {

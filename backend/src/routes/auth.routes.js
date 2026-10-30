@@ -17,6 +17,7 @@ export function createAuthRouter({ authController: c, authenticate }) {
   // Logged-in users
   router.get('/me', authenticate, c.me);
   router.patch('/password', authenticate, validateBody(changePasswordSchema), c.changePassword);
+  router.post("/password",authenticate,c.setPassword);
 
   return router;
 }

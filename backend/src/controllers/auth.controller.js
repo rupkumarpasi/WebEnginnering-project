@@ -63,6 +63,14 @@ export class AuthController {
     res.clearCookie(REFRESH_COOKIE, { path: '/api/v1/auth' }).status(204).end();
   };
 
+
+  setPassword= async(req,res)=>{
+    const {newPassword} = req.body;
+ await this.auth.setPassword(req.user.id, newPassword);
+  res.clearCookie(REFRESH_COOKIE, { path: '/api/v1/auth' }).status(204).end();
+
+  }
+
   // ── OAuth 2.0 Authorization Code flow + PKCE with GitHub ──
 
   githubStart = async (req, res) => {
@@ -94,6 +102,9 @@ export class AuthController {
     const profile = await this.github.getProfile(githubToken);
     this.#sendSession(res, await this.auth.loginWithGithub(profile));
   };
+
+
+  
 }
 
 function parseJson(value) {

@@ -26,6 +26,19 @@ export function createApp(container) {
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', uptimeSec: Math.round(process.uptime()) });
   });
+  // Uploaded files on local disk are served as static files (public, cache forever: names never repeat).
+  if (container.uploads.driver === 'local') {
+    app.use(
+      '/uploads',
+      express.static(container.uploads.localDir, {
+        index: false,
+        dotfiles: 'deny',
+        immutable: true,
+        maxAge: '365d',
+        setHeaders: (res) => res.set('X-Content-Type-Options', 'nosniff'), // never let the browser guess the type
+      }),
+    );
+  }
   app.use('/api/v1/auth', createAuthRouter(container));
   app.use('/api/v1/users', createUsersRouter(container));
 
