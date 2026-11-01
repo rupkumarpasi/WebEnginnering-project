@@ -15,7 +15,7 @@ export function createUsersRouter({ usersController: c, avatarController: a, aut
   router.get('/',           requireRole('admin'),                                    c.list);
   router.post('/',          requireRole('admin'), validateBody(createUserSchema),    c.create);
   router.get('/:id',        requirePermission('users:read'),                         c.getById);
-  router.patch('/:id',      requirePermission('users:update'), validateBody(updateUserSchema, { partial: true }), c.update);
+  router.patch('/:id',      requirePermission('users:update'), validateBody(updateUserSchema), c.update);
   router.patch('/:id/role', requireRole('admin'), validateBody(changeRoleSchema),    c.changeRole);
   router.delete('/:id',     requirePermission('users:delete'),                       c.remove);
 
