@@ -18,6 +18,9 @@ export function createApp(container) {
   // ── 1. App-level middleware ──
   app.use(requestId);
   if (!config.isTest) app.use(requestLogger);
+  app.use(container.securityHeaders); // Helmet: security headers on EVERY response
+  app.use(container.corsPolicy); // CORS: answer preflights, allow only our frontend origins
+  app.use('/api', container.apiRateLimit); // rate limit the API (not static files)
   app.use(requireJson);
   app.use(express.json({ limit: config.bodyLimit }));
   app.use(cookieParser()); // fills req.cookies (needed for the refresh-token cookie)
@@ -35,7 +38,6 @@ export function createApp(container) {
         dotfiles: 'deny',
         immutable: true,
         maxAge: '365d',
-        setHeaders: (res) => res.set('X-Content-Type-Options', 'nosniff'), // never let the browser guess the type
       }),
     );
   }

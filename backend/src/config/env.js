@@ -57,4 +57,18 @@ export const config = Object.freeze({
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   },
 
+
+  // ── New in 2.5: security ──
+  security: {
+    // Browser origins allowed to call the API (CORS) and to use the refresh cookie (CSRF check).
+    corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+    // Whole API: 300 requests / 15 min per IP.
+    apiRateLimit: { windowMs: 15 * 60 * 1000, limit: toInt(process.env.RATE_LIMIT_MAX, 300) },
+    // Login/register: 5 FAILED attempts / 15 min per IP + email (brute-force protection).
+    authRateLimit: { windowMs: 15 * 60 * 1000, limit: toInt(process.env.AUTH_RATE_LIMIT_MAX, 5) },
+  },
+
 });

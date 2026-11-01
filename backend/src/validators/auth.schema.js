@@ -1,16 +1,17 @@
+import { z } from 'zod';
 import { ROLES } from '../services/users.service.js';
-import { email, lowercase, oneOf, password, string } from './rules.js';
+import { email, password } from './user.schema.js';
 
-export const loginSchema = {
-  email:    { required: true, check: email(), transform: lowercase },
-  password: { required: true, check: string({ max: 72 }) }, // no strength rules on login — just "is it a string"
-};
+export const loginSchema = z.strictObject({
+  email,
+  password: z.string().min(1).max(72), // no strength rules on login — just "is it a string"
+});
 
-export const changePasswordSchema = {
-  currentPassword: { required: true, check: string({ max: 72 }) },
-  newPassword:     { required: true, check: password() },
-};
+export const changePasswordSchema = z.strictObject({
+  currentPassword: z.string().min(1).max(72),
+  newPassword: password,
+});
 
-export const changeRoleSchema = {
-  role: { required: true, check: oneOf(ROLES) },
-};
+export const changeRoleSchema = z.strictObject({
+  role: z.enum(ROLES),
+});
