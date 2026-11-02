@@ -2,8 +2,10 @@ import { createApp } from './app.js';
 import { config } from './config/env.js';
 import { createContainer } from './container.js';
 import { bootstrapAdmin } from './data/bootstrap-admin.js';
+import { getRedisClient } from './storage/redis-client.js';
 
-const container = createContainer();
+  const redisClient = await getRedisClient();
+const container = createContainer({redisClient});
 await bootstrapAdmin(container.usersService, config.admin);
 const app = createApp(container);
 

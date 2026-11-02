@@ -69,6 +69,8 @@ export const config = Object.freeze({
     apiRateLimit: { windowMs: 15 * 60 * 1000, limit: toInt(process.env.RATE_LIMIT_MAX, 300) },
     // Login/register: 5 FAILED attempts / 15 min per IP + email (brute-force protection).
     authRateLimit: { windowMs: 15 * 60 * 1000, limit: toInt(process.env.AUTH_RATE_LIMIT_MAX, 5) },
+    redisUrl: process.env.REDIS_URL?.trim(), // optional, for rate limiting in production
+    rateLimitStorage: process.env.RATE_LIMIT_STORAGE ?? 'memory', // 'memory' or 'redis'
   },
 
 });

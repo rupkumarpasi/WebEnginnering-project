@@ -22,6 +22,13 @@ function createStorage(uploads) {
   return new LocalDiskStorage({ dir: uploads.localDir, publicBaseUrl: uploads.publicBaseUrl });
 }
 
+// function checkRateLimitStorage(security){
+//   if(security.rateLimitStorage === 'redis' && security.redisUrl){
+//     return true;
+//   }
+//   return false;
+// }
+
 // Composition root. `overrides` lets tests swap pieces (fake hasher, fake GitHub fetch, ...).
 export function createContainer(overrides = {}) {
   const usersRepository = overrides.usersRepository ?? new UsersRepository();
@@ -39,6 +46,7 @@ export function createContainer(overrides = {}) {
   const avatarService = new AvatarService(usersService, new ImageService(), storage, { maxBytes: uploads.maxBytes });
 
   const security = { ...config.security, ...overrides.security };
+  const redisClient = overrides.redisClient ?? null;
 
   return {
     usersRepository,
@@ -61,6 +69,6 @@ export function createContainer(overrides = {}) {
     corsPolicy: corsPolicy(security.corsOrigins),
     verifyOrigin: verifyOrigin(security.corsOrigins),
     apiRateLimit: apiRateLimit(security.apiRateLimit),
-    authRateLimit: authRateLimit(security.authRateLimit),
+    authRateLimit: authRateLimit(security.authRateLimit, { redisClient }),
   };
 }
