@@ -2,6 +2,7 @@ import cors from 'cors';
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { forbidden, HttpError } from '../utils/http-error.js';
+import { rateLimitConfig } from '../config/redis-rate-limit.js';
 
 // ── Security headers (OWASP A05 Security Misconfiguration) ──
 // Helmet sets ~13 headers: Content-Security-Policy, Strict-Transport-Security, X-Content-Type-Options,
@@ -43,17 +44,44 @@ export const verifyOrigin = (allowedOrigins) => (req, res, next) => {
 const tooManyRequests = (message) => (req, res, next) =>
   next(new HttpError(429, 'Too Many Requests', message));
 
-export const apiRateLimit = ({ windowMs, limit }) =>
-  rateLimit({
-    windowMs,
-    limit,
-    standardHeaders: 'draft-8', // RateLimit + RateLimit-Policy headers
-    legacyHeaders: false,
-    handler: tooManyRequests('Too many requests, please try again later'),
-  });
+// export const apiRateLimit = ({ windowMs, limit }) =>
+//   rateLimit({
+//     windowMs,
+//     limit,
+//     standardHeaders: 'draft-8', // RateLimit + RateLimit-Policy headers
+//     legacyHeaders: false,
+//     handler: tooManyRequests('Too many requests, please try again later'),
+//   });
 
-export const authRateLimit = ({ windowMs, limit }) =>
-  rateLimit({
+// export const authRateLimit = ({ windowMs, limit }) =>
+//   rateLimit({
+//     windowMs,
+//     limit,
+//     standardHeaders: 'draft-8',
+//     legacyHeaders: false,
+//     skipSuccessfulRequests: true, // only FAILED logins count against the limit
+//     // Key = IP + email, so one attacker can't lock out every user, and one user can't be brute-forced.
+//     keyGenerator: (req) => `${ipKeyGenerator(req.ip)}:${String(req.body?.email ?? '').toLowerCase()}`,
+//     handler: tooManyRequests('Too many attempts, please try again in 15 minutes'),
+//   });
+
+
+export const authRateLimit =({windowMs,limit}, { redisClient = null }={})=>{
+return rateLimitConfig({
+  windowMs, // 15 minutes
+  limit, // 5 FAILED attempts per IP + email
+  prefix: 'Auth:',
+  route: 'auth',
+  redisClient, // Redis client for distributed rate limiting
+  skipSuccessfulRequests: true, // only FAILED logins count against the limit
+  keyGenerator: (req) => `${ipKeyGenerator(req.ip)}:${String(req.body?.email ?? '').toLowerCase()}`,
+  handler: tooManyRequests('Too many attempts, please try again in 15 minutes'), // Prefix for Redis keys to avoid collisions with other rate limits
+});
+} 
+
+
+export const apiRateLimit =({windowMs,limit}, { redisClient = null }={})=>{
+ return rateLimitConfig({
     windowMs,
     limit,
     standardHeaders: 'draft-8',
@@ -63,3 +91,4 @@ export const authRateLimit = ({ windowMs, limit }) =>
     keyGenerator: (req) => `${ipKeyGenerator(req.ip)}:${String(req.body?.email ?? '').toLowerCase()}`,
     handler: tooManyRequests('Too many attempts, please try again in 15 minutes'),
   });
+}
