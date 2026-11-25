@@ -1,0 +1,585 @@
+/* Theme variables (defaults to light; toggle via [data-theme="dark"] or [data-theme="light"]) */
+:root {
+  --bg-page: #f8fafc;
+  --bg-header: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-muted: #475569;
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="dark"] {
+  --bg-page: #0b1120;
+  --bg-header: #0f172a;
+  --bg-subtle: #1e293b;
+  --bg-hover: #334155;
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #60a5fa;
+  --accent-soft: rgba(96, 165, 250, 0.16);
+  --border: #1e293b;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Sticky top bar */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+}
+
+/* Navigation layout */
+nav {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* NavLinks (Home, Users, Login) */
+nav a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+nav a:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-subtle);
+}
+
+/* Active route highlight (NavLink adds .active and aria-current="page") */
+nav a.active,
+nav a[aria-current="page"] {
+  color: var(--accent);
+  background-color: var(--accent-soft);
+  font-weight: 600;
+}
+
+/* Shared button styling (Logout + Theme toggle) */
+nav button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+nav button:hover {
+  background-color: var(--bg-hover);
+}
+
+nav button:active {
+  transform: scale(0.98);
+}
+
+/* Push auth button to the right and keep theme toggle next to it */
+nav > button:first-of-type,
+nav > a[href="/login"] {
+  margin-left: auto;
+}
+
+/* Theme toggle button */
+button[aria-label="Toggle theme"] {
+  margin-left: 0;
+  padding: 0.45rem 0.6rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Keyboard focus ring */
+nav a:focus-visible,
+nav button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Main outlet container */
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem;
+}
+
+/* Responsive tweaks for smaller screens */
+@media (max-width: 540px) {
+  nav {
+    padding: 0.65rem 1rem;
+    gap: 0.35rem;
+  }
+
+  nav a,
+  nav button {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.65rem;
+  }
+
+  main {
+    padding: 1.25rem 1rem;
+  }
+}
+
+.brand {
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  padding-left: 0 !important;
+}
+
+.nav-links,
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.nav-actions {
+  margin-left: auto;
+}
+
+nav .button,
+.button {
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  gap: 0.45rem;
+  padding: 0.7rem 1rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+nav .button-quiet {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+nav .button-quiet.active {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.button-primary:hover {
+  filter: brightness(1.08);
+}
+
+.button-secondary,
+.button-quiet {
+  background: var(--bg-subtle);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.button-secondary:hover,
+.button-quiet:hover {
+  background: var(--bg-hover);
+}
+
+nav button.theme-toggle {
+  margin: 0;
+  min-height: 2.45rem;
+  min-width: 2.45rem;
+  padding: 0.4rem;
+}
+
+.page-shell {
+  min-height: calc(100vh - 150px);
+  max-width: 1120px;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.home-page,
+.content-page {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.hero {
+  background:
+    radial-gradient(ellipse at 85% 15%, var(--accent-soft), transparent 38%),
+    var(--bg-header);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  padding: clamp(2rem, 7vw, 5rem);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.8rem;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  letter-spacing: -0.065em;
+  line-height: 1.04;
+  margin: 0;
+  max-width: 760px;
+}
+
+.hero-copy {
+  color: var(--text-muted);
+  font-size: 1.12rem;
+  margin: 1.25rem 0 1.7rem;
+  max-width: 600px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.section-heading h2,
+.page-intro h1 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+
+.section-heading {
+  margin-bottom: 1.1rem;
+}
+
+.concept-grid,
+.user-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
+}
+
+.card {
+  background: var(--bg-header);
+  border: 1px solid var(--border);
+  border-radius: 0.95rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.concept-card {
+  padding: 1.3rem;
+}
+
+.concept-card h3,
+.user-card h2,
+.profile-card h2 {
+  letter-spacing: -0.025em;
+  margin: 0 0 0.45rem;
+}
+
+.concept-card p,
+.user-card p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.muted,
+.results-meta,
+.viewport-note {
+  color: var(--text-muted);
+}
+
+.page-intro h1 {
+  margin-bottom: 0.45rem;
+}
+
+.page-intro p:last-child {
+  margin: 0;
+}
+
+.search-field,
+.form-stack label {
+  display: grid;
+  font-size: 0.92rem;
+  font-weight: 650;
+  gap: 0.5rem;
+  max-width: 520px;
+}
+
+.search-field input,
+.form-stack input {
+  background: var(--bg-header);
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 400;
+  padding: 0.8rem 0.9rem;
+  width: 100%;
+}
+
+.search-field input:focus,
+.form-stack input:focus {
+  border-color: var(--accent);
+  outline: 3px solid var(--accent-soft);
+}
+
+.results-meta {
+  font-size: 0.9rem;
+  margin: -1.9rem 0 0;
+}
+
+.user-card {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  padding: 1.2rem;
+}
+
+.user-card-content {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.user-card .muted {
+  margin-top: -0.45rem;
+}
+
+.avatar {
+  align-items: center;
+  background: var(--accent-soft);
+  border-radius: 50%;
+  color: var(--accent);
+  display: inline-flex;
+  flex: 0 0 2.8rem;
+  font-size: 1.2rem;
+  font-weight: 750;
+  height: 2.8rem;
+  justify-content: center;
+  width: 2.8rem;
+}
+
+.text-link {
+  color: var(--accent);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.viewport-note {
+  font-size: 0.85rem;
+  margin: -1.5rem 0 0;
+}
+
+.empty-state {
+  padding: 2rem;
+}
+
+.empty-state h1,
+.empty-state h2 {
+  letter-spacing: -0.04em;
+  margin: 0 0 0.55rem;
+}
+
+.detail-card {
+  margin: 1.4rem auto 0;
+  max-width: 680px;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  width: 100%;
+}
+
+.avatar-large {
+  font-size: 1.6rem;
+  height: 4rem;
+  margin-bottom: 1.5rem;
+  width: 4rem;
+}
+
+.detail-card h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.05em;
+  margin: 0;
+}
+
+.detail-role {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.detail-list {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+  padding-top: 1.2rem;
+}
+
+.detail-list div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.detail-list dt {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.detail-list dd {
+  margin: 0;
+}
+
+.detail-list a {
+  color: var(--accent);
+}
+
+.back-link {
+  width: fit-content;
+}
+
+.auth-page {
+  display: grid;
+  min-height: 65vh;
+  place-items: center;
+}
+
+.auth-card {
+  max-width: 440px;
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  width: 100%;
+}
+
+.auth-card h1 {
+  font-size: 2rem;
+  letter-spacing: -0.05em;
+  margin: 0;
+}
+
+.form-stack {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.form-stack .button {
+  border: 0;
+  font: inherit;
+}
+
+.auth-footnote {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-bottom: 1.2rem;
+}
+
+.form-error {
+  color: #dc2626;
+  margin: 0;
+}
+
+.not-found {
+  margin: 5vh auto;
+  max-width: 620px;
+}
+
+.not-found .button {
+  margin-top: 0.8rem;
+  width: fit-content;
+}
+
+.profile-card {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  max-width: 600px;
+  padding: 1.5rem;
+}
+
+.status-pill {
+  background: var(--accent-soft);
+  border-radius: 999px;
+  color: var(--accent);
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 650;
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.65rem;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 540px) {
+  .brand {
+    font-size: 0.95rem;
+  }
+
+  .nav-links {
+    gap: 0.1rem;
+  }
+
+  .nav-actions {
+    gap: 0.25rem;
+  }
+
+  .user-card {
+    padding: 1rem;
+  }
+}
