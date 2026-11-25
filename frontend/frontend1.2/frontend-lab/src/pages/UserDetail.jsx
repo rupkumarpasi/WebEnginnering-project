@@ -1,5 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { users } from '../data/users.js';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
 
 export default function UserDetail() {
   const { id } = useParams();
@@ -7,28 +9,38 @@ export default function UserDetail() {
 
   if (!user) {
     return (
-      <section className="card empty-state">
-        <p className="eyebrow">USER NOT FOUND</p>
-        <h1>We couldn’t find that profile.</h1>
-        <Link className="text-link" to="/users">Back to people</Link>
-      </section>
+      <Card as="section" className="mx-auto mt-10 max-w-2xl space-y-4 p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">USER NOT FOUND</p>
+        <h1 className="text-2xl font-bold tracking-tight">We couldn’t find that profile.</h1>
+        <Button as={Link} variant="ghost" to="/users">Back to people</Button>
+      </Card>
     );
   }
 
   return (
-    <div className="content-page">
-      <Link className="text-link back-link" to="/users">← Back to people</Link>
-      <article className="card detail-card">
-        <div className="avatar avatar-large" aria-hidden="true">{user.name.charAt(0)}</div>
-        <p className="eyebrow">TEAM PROFILE</p>
-        <h1>{user.name}</h1>
-        <p className="detail-role">{user.role}</p>
-        <p>{user.bio}</p>
-        <dl className="detail-list">
-          <div><dt>Email</dt><dd><a href={`mailto:${user.email}`}>{user.email}</a></dd></div>
-          <div><dt>Location</dt><dd>{user.location}</dd></div>
+    <div className="space-y-5">
+      <Button as={Link} variant="ghost" to="/users">← Back to people</Button>
+      <Card as="article" className="mx-auto w-full max-w-2xl space-y-5 p-6 sm:p-10">
+        <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary" aria-hidden="true">
+          {user.name.charAt(0)}
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-primary">TEAM PROFILE</p>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{user.name}</h1>
+          <p className="mt-1 font-medium text-primary">{user.role}</p>
+        </div>
+        <p className="leading-7 text-muted">{user.bio}</p>
+        <dl className="grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
+          <div className="space-y-1">
+            <dt className="text-sm text-muted">Email</dt>
+            <dd><a className="font-medium text-primary hover:underline" href={`mailto:${user.email}`}>{user.email}</a></dd>
+          </div>
+          <div className="space-y-1">
+            <dt className="text-sm text-muted">Location</dt>
+            <dd className="font-medium">{user.location}</dd>
+          </div>
         </dl>
-      </article>
+      </Card>
     </div>
   );
 }

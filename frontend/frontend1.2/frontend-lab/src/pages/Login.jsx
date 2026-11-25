@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
 
 export default function Login() {
   const { login } = useAuth();
@@ -23,26 +25,28 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-page">
-      <section className="card auth-card">
-        <p className="eyebrow">WELCOME BACK</p>
-        <h1>Sign in</h1>
-        <p className="muted">Use any email to try the local authentication stub.</p>
-        <form className="form-stack" onSubmit={handleSubmit}>
-          <label>
+    <div className="grid min-h-[65vh] place-items-center">
+      <Card as="section" className="w-full max-w-md space-y-5 p-6 sm:p-8">
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-primary">WELCOME BACK</p>
+          <h1 className="text-3xl font-bold tracking-tight">Sign in</h1>
+          <p className="mt-2 text-sm text-muted">Use any email to try the local authentication stub.</p>
+        </div>
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <label className="grid gap-2 text-sm font-medium">
             Email
-            <input autoComplete="email" type="email" name="email" placeholder="you@example.com" required />
+            <input className="rounded-card border border-line bg-surface px-3 py-2.5 text-fg placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" autoComplete="email" type="email" name="email" placeholder="you@example.com" required />
           </label>
-          <label>
+          <label className="grid gap-2 text-sm font-medium">
             Password
-            <input autoComplete="current-password" type="password" name="password" placeholder="Enter a password" required />
+            <input className="rounded-card border border-line bg-surface px-3 py-2.5 text-fg placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" autoComplete="current-password" type="password" name="password" placeholder="Enter a password" required />
           </label>
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="button button-primary" type="submit">Sign in</button>
+          {error && <p className="text-sm text-danger" role="alert">{error}</p>}
+          <Button type="submit">Sign in</Button>
         </form>
-        <p className="auth-footnote">Authentication is a frontend-only demo, not a real account system.</p>
-        <Link className="text-link" to="/">Return home</Link>
-      </section>
+        <p className="text-xs leading-5 text-muted">Authentication is a frontend-only demo, not a real account system.</p>
+        <Link className="text-sm font-medium text-primary hover:underline" to="/">Return home</Link>
+      </Card>
     </div>
   );
 }
