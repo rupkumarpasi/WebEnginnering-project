@@ -1,11 +1,24 @@
 import { Link, useParams } from 'react-router-dom';
-import { users } from '../data/users.js';
+import { useUser } from '../hooks/useUsers.js';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 
 export default function UserDetail() {
   const { id } = useParams();
-  const user = users.find((item) => item.id === Number(id));
+  const { data: user, isPending, isError, error, refetch } = useUser(id);
+
+  if (isPending) {
+    return <p role="status">Loading user…</p>;
+  }
+
+  if (isError) {
+    return (
+      <Card as="section" className="mx-auto mt-10 max-w-2xl space-y-4 p-8">
+        <p role="alert" className="text-danger">Failed to load user: {error.message}</p>
+        <Button variant="ghost" onClick={() => refetch()}>Retry</Button>
+      </Card>
+    );
+  }
 
   if (!user) {
     return (
