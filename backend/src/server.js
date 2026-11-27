@@ -1,9 +1,11 @@
 import { createApp } from './app.js';
+import { migrate } from './db/migrate.js';
 import { config } from './config/env.js';
 import { createContainer } from './container.js';
 import { bootstrapAdmin } from './data/bootstrap-admin.js';
 
 const container = createContainer();
+await migrate(container.pool);
 await bootstrapAdmin(container.usersService, config.admin);
 const app = createApp(container);
 
@@ -12,11 +14,11 @@ const server = app.listen(config.port, config.host, () => {
   if (!container.githubClient.isConfigured) console.log('ℹ️  GitHub login disabled (GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET not set)');
 });
 
-function shutdown(signal) {
-  console.log(`${signal} received — shutting down`);
-  server.close(() => process.exit(0));
-  server.closeIdleConnections();
-  setTimeout(() => process.exit(1), 10_000).unref();
+async function shutdown() {
+  server.close();
+  await container.pool.end();
+  process.exit(0);
 }
-process.on('SIGTERM', shutdown);
+
 process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

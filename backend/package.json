@@ -9,7 +9,11 @@
   "scripts": {
     "dev": "node --env-file=.env --watch src/server.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "node --env-file-if-exists=.env src/db/run-migrate.js",
+    "db:psql": "docker compose exec postgres psql -U users -d users_api"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
@@ -27,6 +31,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.5.0",
     "on-headers": "^1.1.0",
+    "pg": "^8.23.1",
     "sharp": "^0.35.5",
     "zod": "^4.6.7"
   },

@@ -11,6 +11,11 @@ if (jwtSecret.length < 32) {
   throw new Error('JWT_SECRET must be set and at least 32 characters long (see .env.example)');
 }
 
+export const env = Object.freeze({
+  databaseUrl: process.env.DATABASE_URL,
+redisUrl: process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
+});
+
 export const config = Object.freeze({
   env: process.env.NODE_ENV ?? 'development',
   isProduction: process.env.NODE_ENV === 'production',
@@ -18,6 +23,8 @@ export const config = Object.freeze({
   port: toInt(process.env.PORT, 3000),
   host: process.env.HOST ?? '127.0.0.1',
   bodyLimit: process.env.BODY_LIMIT ?? '100kb',
+  // …existing fields…
+
 
   auth: {
     jwtSecret,
