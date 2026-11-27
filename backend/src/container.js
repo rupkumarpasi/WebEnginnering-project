@@ -1,4 +1,6 @@
 import { config } from './config/env.js';
+import { env } from './config/env.js';
+import { createPool } from './db/pool.js';
 import { AuthController } from './controllers/auth.controller.js';
 import { AvatarController } from './controllers/avatar.controller.js';
 import { UsersController } from './controllers/users.controller.js';
@@ -24,7 +26,8 @@ function createStorage(uploads) {
 
 // Composition root. `overrides` lets tests swap pieces (fake hasher, fake GitHub fetch, ...).
 export function createContainer(overrides = {}) {
-  const usersRepository = overrides.usersRepository ?? new UsersRepository();
+  const pool = overrides.pool ?? createPool();
+  const usersRepository = overrides.usersRepository ?? new UsersRepository(pool);
   const refreshTokensRepository = overrides.refreshTokensRepository ?? new RefreshTokensRepository();
 
   const usersService =
@@ -41,6 +44,7 @@ export function createContainer(overrides = {}) {
   const security = { ...config.security, ...overrides.security };
 
   return {
+    pool,
     usersRepository,
     refreshTokensRepository,
     usersService,
@@ -62,5 +66,6 @@ export function createContainer(overrides = {}) {
     verifyOrigin: verifyOrigin(security.corsOrigins),
     apiRateLimit: apiRateLimit(security.apiRateLimit),
     authRateLimit: authRateLimit(security.authRateLimit),
+    ...overrides
   };
 }
